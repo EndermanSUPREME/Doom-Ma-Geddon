@@ -2,6 +2,7 @@
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Hello World");
+        DiversionPrompt dp = new DiversionPrompt();
+        dp.ShowDialog();
     }
 }
