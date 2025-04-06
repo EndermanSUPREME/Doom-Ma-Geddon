@@ -1,3 +1,5 @@
+using StartPrompt; // import my custom namespace
+
 using System;
 using System.Drawing;
 using Microsoft.Win32;
@@ -6,9 +8,11 @@ using System.Drawing.Drawing2D;
 
 public class DiversionPrompt : Form
 {
+    bool lightMode;
+
     public DiversionPrompt()
     {
-        bool lightMode = !UsingLightTheme();
+        lightMode = UsingLightTheme();
 
         this.Text = "Program Compatibility Assistant";
         this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -60,25 +64,28 @@ public class DiversionPrompt : Form
 
         this.Controls.Add(dontShow);
 
-        Button learnMore = new Button
-        {
-            Text = "Learn more",
-            Location = new Point(30, 210),
-            Size = new Size(195, 30),
-            BackColor = Color.LightSkyBlue,
-            FlatStyle = FlatStyle.Flat
-        };
+        CurvedButton learnMore = new CurvedButton(5, 2);
+        learnMore.Text = "Learn more";
+        learnMore.ForeColor = Color.Black;
+        learnMore.Location = new Point(30, 210);
+        learnMore.Size = new Size(195, 30);
+        learnMore.BackColor = Color.LightSkyBlue;
+        learnMore.FlatStyle = FlatStyle.Flat;
+
+        // Add event handlers for mouse and keyboard interactions
+        learnMore.MouseEnter += ButtonOnFocus;
+        learnMore.MouseLeave += ButtonOffFocus;
+        learnMore.GotFocus += ButtonOnFocus;
+        learnMore.LostFocus += ButtonOffFocus;
 
         learnMore.Click += (s, e) => MessageBox.Show("Redirecting to help page...");
         this.Controls.Add(learnMore);
 
-        Button cancel = new Button
-        {
-            Text = "Cancel",
-            Location = new Point(230, 210),
-            Size = new Size(185, 30),
-            FlatStyle = FlatStyle.Flat
-        };
+        CurvedButton cancel = new CurvedButton(5, 2);
+        cancel.Text = "Cancel";
+        cancel.Location = new Point(230, 210);
+        cancel.Size = new Size(185, 30);
+        cancel.FlatStyle = FlatStyle.Flat;
         
         if (!lightMode)
         {
@@ -86,8 +93,32 @@ public class DiversionPrompt : Form
             cancel.ForeColor = Color.White;
         }
 
+        // Add event handlers for mouse and keyboard interactions
+        cancel.MouseEnter += ButtonOnFocus;
+        cancel.MouseLeave += ButtonOffFocus;
+        cancel.GotFocus += ButtonOnFocus;
+        cancel.LostFocus += ButtonOffFocus;
+
         cancel.Click += (s, e) => this.Close();
         this.Controls.Add(cancel);
+    }
+    
+    void ButtonOnFocus(object sender, EventArgs e)
+    {
+        CurvedButton b = (CurvedButton)sender;
+        if (!lightMode)
+        {
+            b.borderColor = Color.White;
+        } else
+            {
+                b.borderColor = Color.Black;
+            }
+    }
+    
+    void ButtonOffFocus(object sender, EventArgs e)
+    {
+        CurvedButton b = (CurvedButton)sender;
+        b.borderColor = Color.Transparent;
     }
 
     bool UsingLightTheme()
