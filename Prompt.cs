@@ -41,28 +41,14 @@ public class DiversionPrompt : Form
         // Error Info
         Label driverInfo = new Label
         {
-            Text = "Driver: ene.sys\nene.sys\n\nA security setting is detecting "+
-                   "this as a vulnerable driver and\nblocking it from loading. "+
-                   "You'll need to adjust your settings to load\nthis driver",
+            Text = "Driver: ene.sys\nene.sys\n\nWindows cannot load "+
+                   "this critical driver and requires reinstall.\n"+
+                   "You'll need to reinstall this driver or your device may become unstable!",
             Font = new Font("Segoe UI", 9),
             Location = new Point(30, 60),
             Size = new Size(370, 100)
         };
         this.Controls.Add(driverInfo);
-
-        CheckBox dontShow = new CheckBox
-        {
-            Text = "Don't show this message again",
-            Location = new Point(30, 170),
-            Size = new Size(250, 30)
-        };
-        
-        if (!lightMode)
-        {
-            dontShow.ForeColor = Color.White;
-        }
-
-        this.Controls.Add(dontShow);
 
         CurvedButton learnMore = new CurvedButton(5, 2);
         learnMore.Text = "Learn more";
@@ -82,7 +68,7 @@ public class DiversionPrompt : Form
         this.Controls.Add(learnMore);
 
         CurvedButton cancel = new CurvedButton(5, 2);
-        cancel.Text = "Cancel";
+        cancel.Text = "Reinstall";
         cancel.Location = new Point(230, 210);
         cancel.Size = new Size(185, 30);
         cancel.FlatStyle = FlatStyle.Flat;
@@ -102,6 +88,10 @@ public class DiversionPrompt : Form
         cancel.Click += (s, e) => this.Close();
         this.Controls.Add(cancel);
     }
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
     
     void ButtonOnFocus(object sender, EventArgs e)
     {
