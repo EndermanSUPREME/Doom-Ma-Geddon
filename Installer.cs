@@ -11,6 +11,7 @@ public class InstallerPrompt : Form
     ProgressBar pb = new ProgressBar();
     SystemData sd = new SystemData();
     bool lightMode;
+    bool formDied = false;
 
     public InstallerPrompt()
     {
@@ -34,6 +35,8 @@ public class InstallerPrompt : Form
         pb.Style = ProgressBarStyle.Continuous;
         this.Controls.Add(pb);
 
+        this.FormClosing += OnCloseEvent;
+
         Thread t = new Thread(new ThreadStart(ShowProgress));
         t.Start();
     }
@@ -42,12 +45,25 @@ public class InstallerPrompt : Form
 //==============================================================================
 //==============================================================================
 
+    private void OnCloseEvent(object sender, FormClosingEventArgs e)
+    {
+        formDied = true;
+    }
+
     void ShowProgress()
     {
-        while (pb.Value < 100)
+        while (!formDied && pb.Value < 100)
         {
-            pb.Value += 1;
-            Thread.Sleep(1000);
+            if (pb.Value <= 40) {
+                pb.Value += 1;
+                Thread.Sleep(500);
+            } else if (pb.Value > 40 && pb.Value < 80) {
+                pb.Value += 1;
+                Thread.Sleep(1000);
+            } else {
+                pb.Value += 1;
+                Thread.Sleep(700);
+            }
         }
     }
 
