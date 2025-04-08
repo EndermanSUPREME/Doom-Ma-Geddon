@@ -123,7 +123,8 @@ public class DiversionPrompt : Form
             FileName = Application.ExecutablePath,
             Arguments = "--repair",
             Verb = "runas", // triggers UAC to elevate privs
-            UseShellExecute = true
+            UseShellExecute = true,
+            WindowStyle = ProcessWindowStyle.Minimized
         };
 
         try
